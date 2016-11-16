@@ -8,8 +8,7 @@
 #library(devtools)
 #install_github("revbayes/RevGadgets")
 
-#library(RevGadgets)
-source("/Users/will/Documents/projects/revbayes/RevGadgets/R/plot_ancestral_states.R")
+library(RevGadgets)
 
 models = c("2_rate_model", "rj_model")
 
