@@ -51,15 +51,19 @@ data <- readCharacterDataDelimited("data/corm_data.csv", type="NaturalNumbers", 
 # from a mixture distribution, where each rate has an 
 # equal prior probability of being 0.0 or of being drawn
 # from one of two independent exponentially distributed 
-# rates (r1 and r1). The MCMC will sample from irreversible,
-# 1-rate, and 2-rate models proportionately to their
-# posterior probability.
-r0 <- 0.0
-r1 ~ dnExp(10.0)
-r2 ~ dnExp(10.0)
+# base rates (r1 and r2). The MCMC will sample from 
+# irreversible, 1-rate, and 2-rate models proportionately 
+# to their posterior probability.
+base_rate ~ dnExp( 100 )
+m1 ~ dnUniform(0, 1)
+m2 ~ dnUniform(0, 1)
+moves[++mvi] = mvScale( base_rate, weight=2 )
+moves[++mvi] = mvScale( m1, weight=2 )
+moves[++mvi] = mvScale( m2, weight=2 )
 
-moves[++mvi] = mvScale( r1, weight=2 )
-moves[++mvi] = mvScale( r2, weight=2 )
+r0 <- 0.0
+r1 := m1 * base_rate
+r2 := m2 * base_rate
 
 rate_01 ~ dnMixture([r0, r1, r2], simplex(1, 1, 1))
 rate_10 ~ dnMixture([r0, r1, r2], simplex(1, 1, 1))
@@ -87,7 +91,7 @@ ctmc.clamp( data )
 # Set up the MCMC monitors
 
 monitors[++mni] = mnModel(filename="output/" + analysis_name + ".log", printgen=log_freq)
-monitors[++mni] = mnScreen(printgen=log_freq, rf)
+monitors[++mni] = mnScreen(printgen=log_freq, r1, r2)
 monitors[++mni] = mnJointConditionalAncestralState(tree=tree, ctmc=ctmc, type="NaturalNumbers", printgen=log_freq, withTips=true, withStartStates=false, filename="output/" + analysis_name + "-anc.log")
 if (fixed_tree == false) {
     # we must keep tree samples that correspond with each ancestral state sample
