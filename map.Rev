@@ -1,0 +1,26 @@
+
+#
+# Script to generate MAP tree from MrBayes posterior distribution of trees.
+#
+#
+# author: Will Freyman
+#
+
+#treetrace = readTreeTrace("data/infile.nex.run1.t")
+
+trees = readBranchLengthTrees("data/infile.nex.run1.t")
+treetrace = treeTrace(branch_length_trees=trees)
+
+map_tree = mapTree(treetrace, "data/MAP.tre")
+
+"Done."
+q()
+
+
+
+
+
+
+
+
+
