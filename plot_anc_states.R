@@ -8,8 +8,8 @@
 #library(devtools)
 #install_github("revbayes/RevGadgets")
 
-library(RevGadgets)
-
+#library(RevGadgets)
+source("/Users/will/Documents/projects/revbayes/RevGadgets/R/plot_ancestral_states.R")
 
 models = c("2_rate_model", "rj_model")
 
@@ -25,7 +25,8 @@ for (i in 1:length(models)) {
                           node_size_range=c(1, 5)) +
                           geom_tiplab(align=TRUE, size=1.7, linetype="1F", linesize=0.1) + 
                           guides(colour=guide_legend("Corm Morphology")) +
-                          scale_colour_discrete(labels=c("Unknown", "Trilobate", "Bilobate"))
+                          scale_colour_discrete(labels=c("Unknown", "Trilobate", "Bilobate")) +
+                          scale_radius(limits=c(0, 1), breaks=c(0, 0.25, 0.5, 0.75, 1))
 
     ggsave(out_file, width = 11, height = 9)
 
