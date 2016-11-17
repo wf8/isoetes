@@ -50,8 +50,10 @@ data <- readCharacterDataDelimited("data/corm_data.csv", type="NaturalNumbers", 
 # here we assume that each transistion rate can be drawn
 # from a mixture distribution, where each rate has an 
 # equal prior probability of being 0.0 or of being drawn
-# from one of two independent exponentially distributed 
-# base rates (r1 and r2). The MCMC will sample from 
+# from one of two independent rates (r1 and r2). These 
+# rates are the product of an exponentially distributed
+# base rate and the independent uniformly distributed 
+# multipliers m1 and m2. The MCMC will sample from 
 # irreversible, 1-rate, and 2-rate models proportionately 
 # to their posterior probability.
 base_rate ~ dnExp( 100 )
@@ -72,24 +74,20 @@ moves[++mvi] = mvMixtureAllocation( rate_01, weight=2 )
 moves[++mvi] = mvMixtureAllocation( rate_10, weight=2 )
 
 # here we set up the rate matrix Q
-
 Q := fnFreeK( [ rate_01, rate_10 ] )
 
 # set up the root state frequencies 
-
 rf_prior <- [1,1]
 rf ~ dnDirichlet( rf_prior )
 moves[++mvi] = mvBetaSimplex( rf, weight=2 )
 moves[++mvi] = mvDirichletSimplex( rf, weight=2 )
 
 # set up the CTMC 
-
 ctmc ~ dnPhyloCTMC( tree, Q, branchRates=1, rootFrequencies=rf, type="NaturalNumbers")
 ctmc.clamp( data )
 
 
-# Set up the MCMC monitors
-
+# set up the MCMC monitors
 monitors[++mni] = mnModel(filename="output/" + analysis_name + ".log", printgen=log_freq)
 monitors[++mni] = mnScreen(printgen=log_freq, r1, r2)
 monitors[++mni] = mnJointConditionalAncestralState(tree=tree, ctmc=ctmc, type="NaturalNumbers", printgen=log_freq, withTips=true, withStartStates=false, filename="output/" + analysis_name + "-anc.log")
@@ -99,12 +97,10 @@ if (fixed_tree == false) {
 }
 
 # finalize the model 
-
 mymodel = model(Q)
 
 
 # run the MCMC simulation 
-
 mymcmc = mcmc(mymodel, monitors, moves)
 mymcmc.burnin(generations=burnin_gen,tuningInterval=log_freq)
 mymcmc.run(generations=mcmc_gen)
