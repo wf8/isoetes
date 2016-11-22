@@ -10,7 +10,7 @@
 
 library(RevGadgets)
 
-models = c("2_rate_model", "rj_model")
+models = c("1_rate_model", "2_rate_model", "rj_model")
 
 for (i in 1:length(models)) {
 
