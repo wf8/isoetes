@@ -17,9 +17,10 @@
 # some settings for our analysis
 analysis_name = "rj_model"
 fixed_tree = false
-mcmc_gen = 100000
+mcmc_gen = 200000
 burnin_gen = 20000
 log_freq = 100
+seed(1234)
 mvi = 0
 mni = 0
 
@@ -51,21 +52,26 @@ data <- readCharacterDataDelimited("data/corm_data.csv", type="NaturalNumbers", 
 # from a mixture distribution, where each rate has an 
 # equal prior probability of being 0.0 or of being drawn
 # from one of two independent rates (r1 and r2). These 
-# rates are the product of an exponentially distributed
-# base rate and the independent uniformly distributed 
-# multipliers m1 and m2. The MCMC will sample from 
-# irreversible, 1-rate, and 2-rate models proportionately 
-# to their posterior probability.
-base_rate ~ dnExp( 100 )
-m1 ~ dnUniform(0, 1)
-m2 ~ dnUniform(0, 1)
-moves[++mvi] = mvScale( base_rate, weight=2 )
-moves[++mvi] = mvScale( m1, weight=2 )
-moves[++mvi] = mvScale( m2, weight=2 )
+# rates are each drawn from an exponential distribution
+# with a mean of 10 character state transitions over 
+# the tree. The MCMC will sample from irreversible, 
+# 1-rate, and 2-rate models proportionately to their 
+# posterior probability.
+if (fixed_tree) {
+    rate_pr := tree.treeLength() / 10
+} else {
+    rate_pr := map_tree.treeLength() / 10
+}
 
 r0 <- 0.0
-r1 := m1 * base_rate
-r2 := m2 * base_rate
+r1 ~ dnExp(rate_pr)
+r2 ~ dnExp(rate_pr)
+
+r1.setValue(1/rate_pr)
+r2.setValue(1/rate_pr)
+
+moves[++mvi] = mvScale( r1, weight=2 )
+moves[++mvi] = mvScale( r2, weight=2 )
 
 rate_01 ~ dnMixture([r0, r1, r2], simplex(1, 1, 1))
 rate_10 ~ dnMixture([r0, r1, r2], simplex(1, 1, 1))
@@ -74,7 +80,7 @@ moves[++mvi] = mvMixtureAllocation( rate_01, weight=2 )
 moves[++mvi] = mvMixtureAllocation( rate_10, weight=2 )
 
 # here we set up the rate matrix Q
-Q := fnFreeK( [ rate_01, rate_10 ] )
+Q := fnFreeK( [ rate_01, rate_10 ], rescaled=false )
 
 # set up the root state frequencies 
 rf_prior <- [1,1]
@@ -83,7 +89,7 @@ moves[++mvi] = mvBetaSimplex( rf, weight=2 )
 moves[++mvi] = mvDirichletSimplex( rf, weight=2 )
 
 # set up the CTMC 
-ctmc ~ dnPhyloCTMC( tree, Q, branchRates=1, rootFrequencies=rf, type="NaturalNumbers")
+ctmc ~ dnPhyloCTMC( tree, Q, branchRates=1.0, rootFrequencies=rf, type="NaturalNumbers")
 ctmc.clamp( data )
 
 
