@@ -26,13 +26,14 @@ data <- readCharacterDataDelimited("data/corm_data.csv", type="NaturalNumbers", 
 
 # our model of character evolution:
 # here we assume every rate i <-> j to be independent and exponentially distributed
-rate_01 ~ dnExp(10.0)
-rate_10 ~ dnExp(10.0)
+rate_pr := tree.treeLength() / 10
+rate_01 ~ dnExp(rate_pr)
+rate_10 ~ dnExp(rate_pr)
 
 moves[++mvi] = mvScale( rate_01, weight=2 )
 moves[++mvi] = mvScale( rate_10, weight=2 )
 
-Q := fnFreeK( [ rate_01, rate_10 ] )
+Q := fnFreeK( [ rate_01, rate_10 ], rescaled=false )
 
 # set up the root state frequencies 
 
@@ -43,7 +44,7 @@ moves[++mvi] = mvDirichletSimplex( rf, weight=2 )
 
 # set up the CTMC 
 
-ctmc ~ dnPhyloCTMC( tree, Q, branchRates=1, rootFrequencies=rf, type="NaturalNumbers")
+ctmc ~ dnPhyloCTMC( tree, Q, branchRates=1.0, rootFrequencies=rf, type="NaturalNumbers")
 ctmc.clamp( data )
 
 
@@ -62,7 +63,7 @@ mymodel = model(Q)
 # run the MCMC simulation 
 
 mymcmc = mcmc(mymodel, monitors, moves)
-mymcmc.burnin(generations=2000,tuningInterval=100)
+mymcmc.burnin(generations=2000, tuningInterval=100)
 mymcmc.run(generations=10000)
 
 
