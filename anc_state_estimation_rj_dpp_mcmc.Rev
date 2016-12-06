@@ -38,7 +38,7 @@ if (fixed_tree) {
 
     # set up an empirical tree distribution with an MCMC move
     tree ~ dnEmpiricalTree(burnin=0, tree_trace)
-    moves[++mvi] = mvEmpiricalTree( tree, weight=2 )
+    moves[++mvi] = mvEmpiricalTree( tree, weight=20 )
 
     # we'll also read in a pre-cooked MAP tree to summarize ancestral state on
     map_tree <- readTrees("data/MAP-rooted.tre")[1]
@@ -50,27 +50,33 @@ data <- readCharacterDataDelimited("data/corm_data.csv", type="NaturalNumbers", 
 
 # A reversible-jump MCMC model of character evolution:
 # here we assume that each transistion rate can be drawn
-# from a mixture distribution, where each rate has an 
-# equal prior probability of being 0.0 or of being drawn
-# from one of two independent rates (r1 and r2). These 
-# rates are each drawn from an exponential distribution
-# with a mean of 10 character state transitions over 
-# the tree. The MCMC will sample from irreversible, 
-# 1-rate, and 2-rate models proportionately to their 
-# posterior probability.
+# from a mixture distribution, where each rate has a
+# prior probability of being 0.0 or of being drawn from 
+# a Dirichlet process. The rates drawn from the Dirichlet
+# process are given an exponential distribution with a mean
+# of 10 character state transitions over the tree. The MCMC
+# will sample from irreversible, 1-rate, and 2-rate models
+# proportionately to their posterior probability.
 if (fixed_tree) {
     rate_pr := tree.treeLength() / 10
 } else {
     rate_pr := map_tree.treeLength() / 10
 }
 
+# alpha = 1.0 means the 1 rate and 2 rate models have the same 
+# prior probability
 alpha <- 1.0
 base_rates ~ dnDPP( baseDistribution=dnExp(rate_pr), concentration=alpha, numElements=2 )
 moves[++mvi] = mvDPPValueScaling( base_rates, weight=6 )
 moves[++mvi] = mvDPPAllocateAuxGibbs( base_rates, numAux=4, weight=2 )
 
-rate_01 ~ dnMixture([0.0, base_rates[1]], simplex(1, 1))
-rate_10 ~ dnMixture([0.0, base_rates[2]], simplex(1, 1))
+# 2 out of all 5 possible models have a rate_01 set to 0, 
+# and 2 out of 5 have rate_10 set to 0. To assign an equal
+# prior probability for each possible model we use a mixture
+# distribution with a probability of 2/5 to each rate
+# being 0.
+rate_01 ~ dnMixture([0.0, base_rates[1]], simplex(2, 3))
+rate_10 ~ dnMixture([0.0, base_rates[2]], simplex(2, 3))
 
 moves[++mvi] = mvMixtureAllocation( rate_01, weight=2 )
 moves[++mvi] = mvMixtureAllocation( rate_10, weight=2 )

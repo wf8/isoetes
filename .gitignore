@@ -1,4 +1,5 @@
 data/
 output/
 *.pdf
-model_comparison_results.txt
+*.txt
+notes
