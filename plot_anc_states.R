@@ -25,7 +25,8 @@ for (i in 1:length(models)) {
                           geom_tiplab(align=TRUE, size=1.7, linetype="1F", linesize=0.1) + 
                           guides(colour=guide_legend("Corm Morphology")) +
                           scale_colour_discrete(labels=c("Unknown", "Trilobate", "Bilobate")) +
-                          scale_radius(limits=c(0, 1), breaks=c(0, 0.25, 0.5, 0.75, 1))
+                          scale_radius(limits=c(0, 1), breaks=c(0, 0.25, 0.5, 0.75, 1)) +
+                          theme(legend.key = element_blank())
 
     ggsave(out_file, width = 11, height = 9)
 
