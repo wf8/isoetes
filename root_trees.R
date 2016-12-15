@@ -40,7 +40,7 @@ burnin = 5000
 
 for (i in burnin:length(input_trees)) {
     if (is.monophyletic(input_trees[[i]], outgroup)) {
-        output_trees[[j]] = root(input_trees[[i]], outgroup)
+        output_trees[[j]] = root(input_trees[[i]], outgroup, resolve.root=TRUE)
         j = j + 1
     }
 }

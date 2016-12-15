@@ -33,7 +33,7 @@ if (fixed_tree) {
 
     # read in the distribution of trees
     trees = readBranchLengthTrees("data/rooted_trees.nexus")
-    tree_trace = treeTrace(branch_length_trees=trees)
+    tree_trace = treeTrace(trees=trees)
 
     # set up an empirical tree distribution with an MCMC move
     tree ~ dnEmpiricalTree(burnin=0, tree_trace)
