@@ -17,9 +17,11 @@
 
 # some settings for our analysis
 analysis_name = "rj_dpp_model"
-fixed_tree = false
 mcmc_gen = 20000
-burnin_gen = 2000
+burnin_gen = 0
+fixed_tree = false
+#mcmc_gen = 20000
+#burnin_gen = 2000
 log_freq = 10
 seed(1234)
 mvi = 0
@@ -46,7 +48,7 @@ if (fixed_tree) {
 }
 
 # read in corm data
-data <- readCharacterDataDelimited("data/corm_data.csv", type="NaturalNumbers", stateLabels=2, delimiter=",", headers=false)
+data <- readCharacterDataDelimited("data/corm_data_new.csv", type="NaturalNumbers", stateLabels=2, delimiter=",", headers=false)
 
 # A reversible-jump MCMC model of character evolution:
 # here we assume that each transistion rate can be drawn

@@ -20,5 +20,7 @@ write(paste("1 rate: ", round(m1_rate_samples / total_samples, 2), sep=""), file
 write(paste("2 rate: ", round(m2_rate_samples / total_samples, 2), sep=""), file=out_file, append=TRUE)
 write("", file=out_file, append=TRUE)
 
+write(paste("BF 10_irr/1: ", round((m10_irreversible/total_samples)/(m1_rate_samples/total_samples), 2), sep=""), file=out_file, append=TRUE)
+write(paste("BF 10_irr/2: ", round((m10_irreversible/total_samples)/(m2_rate_samples/total_samples), 2), sep=""), file=out_file, append=TRUE)
 write(paste("BF 1/2: ", round((m1_rate_samples/total_samples)/(m2_rate_samples/total_samples), 2), sep=""), file=out_file, append=TRUE)
 write(paste("BF 2/1: ", round((m2_rate_samples/total_samples)/(m1_rate_samples/total_samples), 2), sep=""), file=out_file, append=TRUE)
