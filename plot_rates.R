@@ -10,8 +10,8 @@ p = ggplot(data, aes(x=rate, fill=type)) +
           labs(x="Rate", y="Posterior Density") + 
           geom_density(alpha = 0.4) + 
           guides(fill = guide_legend(title = "Transition Rates")) +
-          geom_vline(xintercept = 27.11, linetype = "longdash", color=hue_pal()(2)[2]) +
-          geom_vline(xintercept = 22.04, linetype = "longdash", color=hue_pal()(2)[1]) 
+          geom_vline(xintercept = mean(log$rate_01), linetype = "longdash", color=hue_pal()(2)[2]) +
+          geom_vline(xintercept = mean(log$rate_10), linetype = "longdash", color=hue_pal()(2)[1]) 
 
 print(p)
 
