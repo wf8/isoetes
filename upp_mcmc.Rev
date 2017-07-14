@@ -20,7 +20,6 @@ fixed_tree = false
 mcmc_gen = 20000
 burnin_gen = 2000
 log_freq = 10
-seed(1234)
 mvi = 0
 mni = 0
 
@@ -62,7 +61,7 @@ data <- readCharacterDataDelimited("data/corm_data_new.csv", type="NaturalNumber
 # proportionately to their posterior probability.
 
 # exponential priors for non-zero transition rates
-rate_pr := tree.treeLength() / 0.01
+rate_pr := tree.treeLength() # 1 transition per tree
 base_rates[1] ~ dnExp(rate_pr)
 base_rates[2] ~ dnExp(rate_pr)
 moves[++mvi] = mvScale( base_rates[1], weight=2 )
