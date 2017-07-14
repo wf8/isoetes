@@ -25,3 +25,8 @@ write(paste("BF 10_irr/1: ", round((m10_irreversible/total_samples)/(m1_rate_sam
 write(paste("BF 10_irr/2: ", round((m10_irreversible/total_samples)/(m2_rate_samples/total_samples), 2), sep=""), file=out_file, append=TRUE)
 write(paste("BF 1/2: ", round((m1_rate_samples/total_samples)/(m2_rate_samples/total_samples), 2), sep=""), file=out_file, append=TRUE)
 write(paste("BF 2/1: ", round((m2_rate_samples/total_samples)/(m1_rate_samples/total_samples), 2), sep=""), file=out_file, append=TRUE)
+write("", file=out_file, append=TRUE)
+
+write("Mean rate_01 for m01_irreversible:", file=out_file, append=TRUE)
+z = which(log$rate_10 == 0)
+write(round( mean( log[z,]$rate_01 ), 4), file=out_file, append=TRUE)
