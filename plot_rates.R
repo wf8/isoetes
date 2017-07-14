@@ -2,7 +2,7 @@
 library(ggplot2)
 library(scales)
 
-log = read.table("output/rj_dpp_model.log", header=TRUE, sep="\t", stringsAsFactors=FALSE)
+log = read.table("output/upp_model.log", header=TRUE, sep="\t", stringsAsFactors=FALSE)
 
 data = data.frame(rate=c(log$rate_01, log$rate_10), type=rep(c("Trilobate to bilobate", "Bilobate to trilobate"), each=length(log$rate_01)))
 

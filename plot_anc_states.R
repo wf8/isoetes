@@ -11,7 +11,7 @@
 library(RevGadgets)
 
 
-models = c("rj_dpp_model")
+models = c("upp_model")
 #models = c("1_rate_model", "2_rate_model", "rj_model", "rj_dpp_model")
 
 for (i in 1:length(models)) {
