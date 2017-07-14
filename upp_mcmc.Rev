@@ -4,9 +4,8 @@
 #       0 = trilobate
 #       1 = bilobate
 #
-# We use reversible-jump MCMC and a Dirichlet mixture model to explore the 
-# space of all possible continuous-time Markov models of phenotypic 
-# character evolution.
+# We use reversible-jump MCMC to explore the space of all possible 
+# continuous-time Markov models of phenotypic character evolution.
 #
 # We also optionally account for phylogenetic uncertainty by integrating 
 # over a distribution of trees previously inferred using MrBayes.
@@ -16,12 +15,10 @@
 #
 
 # some settings for our analysis
-analysis_name = "rj_dpp_model"
-mcmc_gen = 20000
-burnin_gen = 0
+analysis_name = "upp_model"
 fixed_tree = false
-#mcmc_gen = 20000
-#burnin_gen = 2000
+mcmc_gen = 20000
+burnin_gen = 2000
 log_freq = 10
 seed(1234)
 mvi = 0
@@ -31,6 +28,7 @@ if (fixed_tree) {
     
     # read in the tree
     tree <- readTrees("data/MAP-rooted.tre")[1]
+    map_tree <- tree
 
 } else {
 
@@ -39,7 +37,7 @@ if (fixed_tree) {
     tree_trace = treeTrace(trees=trees)
 
     # set up an empirical tree distribution with an MCMC move
-    tree ~ dnEmpiricalTree(burnin=0, tree_trace)
+    tree ~ dnEmpiricalTree(burnin=0.5, tree_trace)
     moves[++mvi] = mvEmpiricalTree( tree, weight=20 )
 
     # we'll also read in a pre-cooked MAP tree to summarize ancestral state on
@@ -50,41 +48,35 @@ if (fixed_tree) {
 # read in corm data
 data <- readCharacterDataDelimited("data/corm_data_new.csv", type="NaturalNumbers", stateLabels=2, delimiter=",", headers=false)
 
+
 # A reversible-jump MCMC model of character evolution:
-# here we assume that each transistion rate can be drawn
-# from a mixture distribution, where each rate has a
-# prior probability of being 0.0 or of being drawn from 
-# a Dirichlet process. The rates drawn from the Dirichlet
-# process are given an exponential distribution with a mean
-# of 10 character state transitions over the tree. The MCMC
-# will sample from irreversible, 1-rate, and 2-rate models
+# here we assume an equal prior probability on each of
+# the 5 possible corm evolution models:  
+# 1) no change
+# 2) irreversible 0->1
+# 3) irreversible 1->0
+# 4) 1 rate model
+# 5) 2 rate model
+# Non-zero transition rates are drawn from an exponential
+# distribution. The MCMC will sample from each model
 # proportionately to their posterior probability.
-if (fixed_tree) {
-    rate_pr := tree.treeLength() / 10
-} else {
-    rate_pr := map_tree.treeLength() / 10
-}
 
-# alpha = 1.0 means the 1 rate and 2 rate models have the same 
-# prior probability
-alpha <- 1.0
-base_rates ~ dnDPP( baseDistribution=dnExp(rate_pr), concentration=alpha, numElements=2 )
-moves[++mvi] = mvDPPValueScaling( base_rates, weight=6 )
-moves[++mvi] = mvDPPAllocateAuxGibbs( base_rates, numAux=4, weight=2 )
+# exponential priors for non-zero transition rates
+rate_pr := tree.treeLength() / 0.01
+base_rates[1] ~ dnExp(rate_pr)
+base_rates[2] ~ dnExp(rate_pr)
+moves[++mvi] = mvScale( base_rates[1], weight=2 )
+moves[++mvi] = mvScale( base_rates[2], weight=2 )
 
-# 2 out of all 5 possible models have a rate_01 set to 0, 
-# and 2 out of 5 have rate_10 set to 0. To assign an equal
-# prior probability for each possible model we use a mixture
-# distribution with a probability of 2/5 to each rate
-# being 0.
-rate_01 ~ dnMixture([0.0, base_rates[1]], simplex(2, 3))
-rate_10 ~ dnMixture([0.0, base_rates[2]], simplex(2, 3))
+# uniform partitioning prior for jumping between models
+rates ~ dnUPP( base_rates, include_zero=true )
+moves[++mvi] = mvUPPAllocation( rates, weight=20 )
 
-moves[++mvi] = mvMixtureAllocation( rate_01, weight=2 )
-moves[++mvi] = mvMixtureAllocation( rate_10, weight=2 )
+rate_01 := rates[1] 
+rate_10 := rates[2] 
 
 # here we set up the rate matrix Q
-Q := fnFreeK( [ rate_01, rate_10 ], rescaled=false )
+Q := fnFreeK( rates, rescaled=false )
 
 # set up the root state frequencies 
 rf_prior <- [1,1]
