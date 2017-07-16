@@ -10,7 +10,8 @@
 mcmc_gen = 10000
 burnin_gen = 1000
 log_freq = 10
-sites = [1, 10, 100, 500, 1000]
+#sites = [5, 50, 100]
+sites = [1, 5, 10, 50, 100]
 reps = 10
 
 
@@ -18,7 +19,7 @@ for (i in 1:sites.size()) {
 
     for (j in 1:reps) {
 
-        analysis_name = "upp_sim_" + i + "_" + j
+        analysis_name = "upp_sim_" + sites[i] + "_" + j
         num_sites = sites[i]
         seed(i*j)
         mvi = 0
